@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Bianco Bot</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+        <link href="/home/giuliobianco/week10/irobot/winter33_bianco.css" rel="stylesheet">
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script src="/home/giuliobianco/week10/irobot/winter33_bianco.js"></script>
+
+
+        <script>
+            function sendCommand(bytestring) {
+                if (bytestring == undefined)
+                    bytestring = '';
+                command = command + 'botname=' + $('#botname').val();
+                command = command + '&bytestring=' + bytestring;
+                $.getJSON(command, function(json) {
+                    $('#result').text(JSON.stringify(json, null, 4));
+                });
+
+            }
+            function sleep(milliseconds) {
+                var start = new Date().getTime();
+                for (var i = 0; i < 1e7; i++) {
+                    if ((new Date().getTime() - start) > milliseconds) {
+                        break;
+                    }
+                }
+            }
+            
+            function beepOnHit(){
+                sendCommand('');
+                sensors = $.parseJSON($('#result').text());
+                leftBumper = sensors.BUMPS_AND_WHEEL_DROPS.charAt(7);
+                console.log(leftBumper);
+                if(leftBumper == 1){
+                   sendCommand('140,0,2,55,10,67,15,141,0');
+                }
+            }
+            
+            
+            
+            $(document).ready(function() {
+
+                var getSensors = setInterval(function() {
+                    sendCommand('');
+                }, 1000);
+
+                $("[data-command]").click(function(event) {
+                    command = $(this).data('command');
+                    sendCommand(command);
+                });
+
+                $('#beephit').change(function() {
+                    if(this.checked)
+                        checkHit = setInterval(beepOnHit,1000);
+                    else
+                        clearInterval(checkHit);
+                });
+
+            });
+
+        </script>
+    </head>
+
+    <body>
+        <div class="container">
+            <h3>Robot Control</h3>
+            
+            <div class ="row">
+                <button data-command = "128" class="btn-success btn col-xs-2">Passive Mode</button>
+                <button data-command = "131" class="btn-warning btn col-xs-2">Safe Mode</button>
+                <button data-command = "132" class="btn-danger btn col-xs-3">Full Mode</button>
+            </div>
+            <div class ="row">
+                <div class="col-xs-3">
+                    <button data-command = "145,0,0,0,0" class="btn-danger btn-lg btn-block">Stop</button>
+                    <button data-command = "145,0,10,0,10" class="btn-primary btn-lg btn-block">Go</button>
+                    <button id ="wimp" class="btn-primary btn-lg btn-block">Wimp</button>
+                    <input type="checkbox" id="beephit">
+                </div>
+            </div>
+            <div class="alert alert-info wordwrap" id="result">Sensors ...</div>
+        </div> <!-- end container -->
+
+    </body>
+</html>
